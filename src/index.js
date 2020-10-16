@@ -13,7 +13,7 @@ video.style = "float:left;";
 document.body.appendChild(video);
 
 const gl_div = document.createElement("div");
-gl_div.width = 620;
+gl_div.width = 640;
 gl_div.height = 480;
 
 document.body.appendChild(gl_div);
@@ -39,23 +39,26 @@ btn.addEventListener("click", async () => {
   var scene = new THREE.Scene();
   var camera = new THREE.PerspectiveCamera(
     75,
-    window.innerWidth / window.innerHeight,
+    // window.innerWidth / window.innerHeight,
+    12.0 / 9.0,
     0.1,
     1000
   );
-  var geometry = new THREE.PlaneGeometry(16, 10);
+
+  var geometry = new THREE.PlaneGeometry(12.0, 9.0);
   var material = new THREE.MeshBasicMaterial({
     // color: 0xffff00,
     // side: THREE.DoubleSide,
     map: texture,
   });
+
   var plane = new THREE.Mesh(geometry, material);
   scene.add(plane);
 
   camera.position.z = 10;
 
   var renderer = new THREE.WebGLRenderer();
-  renderer.setSize(620, 480);
+  renderer.setSize(640, 480);
   gl_div.appendChild(renderer.domElement);
 
   function animate() {
