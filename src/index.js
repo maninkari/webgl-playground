@@ -30,31 +30,37 @@ btn.addEventListener("click", async () => {
 
   video.srcObject = stream;
   await video.play();
+
+  var texture = new THREE.VideoTexture(video);
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.format = THREE.RGBFormat;
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+  );
+  var geometry = new THREE.PlaneGeometry(16, 10);
+  var material = new THREE.MeshBasicMaterial({
+    // color: 0xffff00,
+    // side: THREE.DoubleSide,
+    map: texture,
+  });
+  var plane = new THREE.Mesh(geometry, material);
+  scene.add(plane);
+
+  camera.position.z = 10;
+
+  var renderer = new THREE.WebGLRenderer();
+  renderer.setSize(620, 480);
+  gl_div.appendChild(renderer.domElement);
+
+  function animate() {
+    requestAnimationFrame(animate);
+    renderer.render(scene, camera);
+  }
+  animate();
 });
-
-var scene = new THREE.Scene();
-var camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
-var geometry = new THREE.PlaneGeometry(16, 10);
-var material = new THREE.MeshBasicMaterial({
-  color: 0xffff00,
-  side: THREE.DoubleSide,
-});
-var plane = new THREE.Mesh(geometry, material);
-scene.add(plane);
-
-camera.position.z = 10;
-
-var renderer = new THREE.WebGLRenderer();
-renderer.setSize(620, 480);
-gl_div.appendChild(renderer.domElement);
-
-function animate() {
-  requestAnimationFrame(animate);
-  renderer.render(scene, camera);
-}
-animate();
