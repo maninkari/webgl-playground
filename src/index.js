@@ -8,6 +8,18 @@ btn.id = "btnStart";
 btn.style = "float: right;";
 document.body.appendChild(btn);
 
+const btnPlus = document.createElement("button");
+btnPlus.innerHTML = "+";
+btnPlus.id = "btnPlus";
+btnPlus.style = "float: right;";
+document.body.appendChild(btnPlus);
+
+const btnMinus = document.createElement("button");
+btnMinus.innerHTML = "-";
+btnMinus.id = "btnMinus";
+btnMinus.style = "float: right;";
+document.body.appendChild(btnMinus);
+
 const video = document.createElement("video");
 video.style = "float:left;";
 document.body.appendChild(video);
@@ -15,10 +27,21 @@ document.body.appendChild(video);
 const gl_div = document.createElement("div");
 gl_div.width = 640;
 gl_div.height = 480;
-
 document.body.appendChild(gl_div);
 
 btn.addEventListener("click", async () => {
+  btnPlus.addEventListener("click", () => {
+    shaderMaterial.uniforms.swtch.value++;
+    console.log(shaderMaterial.uniforms.swtch.value);
+  });
+
+  btnMinus.addEventListener("click", () => {
+    shaderMaterial.uniforms.swtch.value > 0
+      ? shaderMaterial.uniforms.swtch.value--
+      : 0;
+    console.log(shaderMaterial.uniforms.swtch.value);
+  });
+
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: false,
     video: {
@@ -37,31 +60,59 @@ btn.addEventListener("click", async () => {
   texture.format = THREE.RGBFormat;
 
   var scene = new THREE.Scene();
-  var camera = new THREE.PerspectiveCamera(
-    75,
-    // window.innerWidth / window.innerHeight,
-    12.0 / 9.0,
+  // var camera = new THREE.PerspectiveCamera(
+  //   60,
+  //   // window.innerWidth / window.innerHeight,
+  //   640.0 / 480.0,
+  //   1,
+  //   1000
+  // );
+
+  let camera = new THREE.OrthographicCamera(
+    640 / -2,
+    640 / 2,
+    480 / 2,
+    480 / -2,
     0.1,
     1000
   );
 
-  var geometry = new THREE.PlaneGeometry(12.0, 9.0);
+  camera.position.z = 320.0;
+  camera.zoom = 1.0;
+
+  var geometry = new THREE.PlaneGeometry(480.0, 360.0);
+  // var geometry = new THREE.Sphere(new THREE.Vector3(0.0,0.0,0.0), 240.0);
   var material = new THREE.MeshBasicMaterial({
     // color: 0xffff00,
     // side: THREE.DoubleSide,
     map: texture,
   });
 
-  var plane = new THREE.Mesh(geometry, material);
+  var shaderMaterial = new THREE.ShaderMaterial({
+    vertexShader: vs,
+    fragmentShader: shader,
+    transparent: true,
+    uniforms: {
+      time: { value: 0.0 },
+      opacity: { value: 0.8 },
+      color: { value: new THREE.Vector3(1.0, 0.5, 0.0) },
+      resolution: { value: new THREE.Vector2() },
+      map: { value: texture },
+      swtch: { value: 0 },
+    },
+  });
+
+  // var plane = new THREE.Mesh(geometry, [material, shaderMaterial]);
+  var plane = new THREE.Mesh(geometry, shaderMaterial);
   scene.add(plane);
 
-  camera.position.z = 10;
-
   var renderer = new THREE.WebGLRenderer();
-  renderer.setSize(640, 480);
+  renderer.setSize(640.0, 480.0);
   gl_div.appendChild(renderer.domElement);
 
   function animate() {
+    // this.shaderMaterial.uniforms.opacity.value = 1;
+    shaderMaterial.uniforms.time.value += 0.05;
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
   }
