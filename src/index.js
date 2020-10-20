@@ -4,9 +4,11 @@ import shader from "./shader.frag";
 const btn = document.createElement("button");
 btn.innerHTML = "Start";
 btn.id = "btnStart";
+btn.style = "float: right;";
 document.body.appendChild(btn);
 
 const video = document.createElement("video");
+video.style = "float:left;";
 document.body.appendChild(video);
 
 const canvas = document.createElement("canvas");
