@@ -1,6 +1,12 @@
 import vs from "./pos.vert";
 import shader from "./shader.frag";
 import * as THREE from "three";
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { GlitchPass } from "three/examples/jsm/postprocessing/GlitchPass.js";
+
+const WIDTH = 640.0;
+const HEIGHT = 480.0;
 
 const style = document.createElement("style");
 style.innerHTML = `ul {
@@ -55,29 +61,35 @@ video.style = "float:left;";
 document.body.appendChild(video);
 
 const gl_div = document.createElement("div");
-gl_div.width = 640;
-gl_div.height = 480;
+gl_div.width = WIDTH;
+gl_div.height = HEIGHT;
 document.body.appendChild(gl_div);
+
+var renderer = new THREE.WebGLRenderer();
+renderer.setSize(WIDTH, HEIGHT);
+
+let mytarget = new THREE.WebGLRenderTarget(WIDTH, HEIGHT);
+let myeffectcomp = new EffectComposer(renderer, mytarget);
 
 btn.addEventListener("click", async () => {
   btnPlus.addEventListener("click", () => {
-    shaderMaterial.uniforms.swtch.value++;
-    console.log(shaderMaterial.uniforms.swtch.value);
+    shaderMaterial.uniforms.swtch.value < 5
+      ? shaderMaterial.uniforms.swtch.value++
+      : 5;
   });
 
   btnMinus.addEventListener("click", () => {
     shaderMaterial.uniforms.swtch.value > 0
       ? shaderMaterial.uniforms.swtch.value--
       : 0;
-    console.log(shaderMaterial.uniforms.swtch.value);
   });
 
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: false,
     video: {
       facingMode: "user",
-      width: 640,
-      height: 480,
+      width: WIDTH,
+      height: HEIGHT,
     },
   });
 
@@ -90,27 +102,28 @@ btn.addEventListener("click", async () => {
   texture.format = THREE.RGBFormat;
 
   var scene = new THREE.Scene();
-  // var camera = new THREE.PerspectiveCamera(
-  //   60,
-  //   // window.innerWidth / window.innerHeight,
-  //   640.0 / 480.0,
-  //   1,
-  //   1000
-  // );
 
   let camera = new THREE.OrthographicCamera(
-    640 / -2,
-    640 / 2,
-    480 / 2,
-    480 / -2,
+    WIDTH / -2,
+    WIDTH / 2,
+    HEIGHT / 2,
+    HEIGHT / -2,
     0.1,
     1000
   );
 
-  camera.position.z = 320.0;
+  //   let camera = new THREE.PerspectiveCamera(
+  //     60,
+  //     // window.innerWidth / window.innerHeight,
+  //     640.0 / 480.0,
+  //     1,
+  //     1000
+  //   );
+
+  camera.position.z = WIDTH / 2.0;
   camera.zoom = 1.0;
 
-  var geometry = new THREE.PlaneGeometry(480.0, 360.0);
+  var geometry = new THREE.PlaneGeometry(WIDTH * 0.75, HEIGHT * 0.75);
   // var geometry = new THREE.Sphere(new THREE.Vector3(0.0,0.0,0.0), 240.0);
   var material = new THREE.MeshBasicMaterial({
     // color: 0xffff00,
@@ -133,18 +146,24 @@ btn.addEventListener("click", async () => {
   });
 
   // var plane = new THREE.Mesh(geometry, [material, shaderMaterial]);
-  var plane = new THREE.Mesh(geometry, shaderMaterial);
+  var plane = new THREE.Mesh(geometry);
   scene.add(plane);
 
-  var renderer = new THREE.WebGLRenderer();
-  renderer.setSize(640.0, 480.0);
   gl_div.appendChild(renderer.domElement);
+
+  var renderPass = new RenderPass(scene, camera);
+  myeffectcomp.addPass(renderPass);
+
+  var glitchPass = new GlitchPass();
+  myeffectcomp.addPass(glitchPass);
 
   function animate() {
     // this.shaderMaterial.uniforms.opacity.value = 1;
     shaderMaterial.uniforms.time.value += 0.05;
+
+    // renderer.render(scene, camera);
+    myeffectcomp.render();
     requestAnimationFrame(animate);
-    renderer.render(scene, camera);
   }
-  animate();
+  requestAnimationFrame(animate);
 });
