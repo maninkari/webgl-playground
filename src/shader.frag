@@ -19,7 +19,7 @@ void sw1() {
 }
 
 void sw2() {
-    vec4 col = vec4(vec3(0.5 - 0.5*cos(2.0*time + vUv.x), 0.5 + 0.5*cos(2.0*time + vUv.y), 0.5 + 0.5*sin(time + vUv.x))*color, opacity);
+    vec4 col = vec4(vec3(0.5 - 0.5*cos(time + vUv.x*4.0), 0.5 + 0.5*cos(time + vUv.y*5.0), 0.5 + 0.5*sin(time + vUv.x*3.0)), opacity);
     gl_FragColor = col;
 }
 
@@ -37,7 +37,7 @@ void sw4() {
     vec4 newColour = vec4(vec3(mask), 1.0); 
 
     vec4 text = texture2D(map, vUv);
-    newColour = blendMultiply(newColour, text, opacity);
+    newColour = blendMultiply(newColour, text, 1.0);
     
     gl_FragColor = newColour;
 }
@@ -51,15 +51,14 @@ void sw5() {
     float mask = 1.0-step(0.5 + sin(time + vUv.x*3.0)*0.5, d);
     vec4 newColour = vec4(vec3(mask), 1.0); 
     
-    vec4 c1 = vec4(vec3(0.5 - 0.5*cos(2.0*time + vUv.x), 0.5 + 0.5*cos(2.0*time + vUv.y), 0.5 + 0.5*sin(time + vUv.x))*color, opacity);
+    vec4 c1 = vec4(vec3(0.5 - 0.5*cos(time + vUv.x*4.0), 0.5 + 0.5*cos(time + vUv.y*5.0), 0.5 + 0.5*sin(time + vUv.x*3.0)), opacity);
     newColour = blendMultiply(newColour, c1, opacity);
 
     vec4 text = texture2D(map, vUv);
-    newColour = blendMultiply(newColour, text, opacity);
+    newColour = blendMultiply(newColour, text, 1.0);
     
     gl_FragColor = newColour;
 }
-
 
 void main() {
     switch(swtch) {
