@@ -61,14 +61,16 @@ document.body.appendChild(gl_div);
 
 btn.addEventListener("click", async () => {
   btnPlus.addEventListener("click", () => {
-    shaderMaterial.uniforms.swtch.value++;
+    shaderMaterial.uniforms.swtch.value < 5
+      ? shaderMaterial.uniforms.swtch.value++
+      : 5;
     console.log(shaderMaterial.uniforms.swtch.value);
   });
 
   btnMinus.addEventListener("click", () => {
-    shaderMaterial.uniforms.swtch.value > 0
+    shaderMaterial.uniforms.swtch.value > 1
       ? shaderMaterial.uniforms.swtch.value--
-      : 0;
+      : 1;
     console.log(shaderMaterial.uniforms.swtch.value);
   });
 
@@ -128,7 +130,7 @@ btn.addEventListener("click", async () => {
       color: { value: new THREE.Vector3(1.0, 0.5, 0.0) },
       resolution: { value: new THREE.Vector2() },
       map: { value: texture },
-      swtch: { value: 0 },
+      swtch: { value: 1 },
     },
   });
 
@@ -138,6 +140,7 @@ btn.addEventListener("click", async () => {
 
   var renderer = new THREE.WebGLRenderer();
   renderer.setSize(640.0, 480.0);
+
   gl_div.appendChild(renderer.domElement);
 
   function animate() {

@@ -4,9 +4,6 @@ import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { GlitchPass } from "three/examples/jsm/postprocessing/GlitchPass.js";
-// import { CopyShader } from "three/examples/jsm/shaders/CopyShader.js";
-// import { SepiaShader } from "three/examples/jsm/shaders/SepiaShader.js";
-// import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 
 const WIDTH = 640.0;
 const HEIGHT = 480.0;
@@ -82,9 +79,9 @@ btn.addEventListener("click", async () => {
   });
 
   btnMinus.addEventListener("click", () => {
-    shaderMaterial.uniforms.swtch.value > 0
+    shaderMaterial.uniforms.swtch.value > 1
       ? shaderMaterial.uniforms.swtch.value--
-      : 0;
+      : 1;
   });
 
   const stream = await navigator.mediaDevices.getUserMedia({
@@ -115,24 +112,10 @@ btn.addEventListener("click", async () => {
     1000
   );
 
-  //   let camera = new THREE.PerspectiveCamera(
-  //     60,
-  //     // window.innerWidth / window.innerHeight,
-  //     640.0 / 480.0,
-  //     1,
-  //     1000
-  //   );
-
   camera.position.z = WIDTH / 2.0;
   camera.zoom = 1.0;
 
   var geometry = new THREE.PlaneGeometry(WIDTH * 0.75, HEIGHT * 0.75);
-  // var geometry = new THREE.Sphere(new THREE.Vector3(0.0,0.0,0.0), 240.0);
-  var material = new THREE.MeshBasicMaterial({
-    // color: 0xffff00,
-    // side: THREE.DoubleSide,
-    map: texture,
-  });
 
   var shaderMaterial = new THREE.ShaderMaterial({
     vertexShader: vs,
@@ -144,11 +127,10 @@ btn.addEventListener("click", async () => {
       color: { value: new THREE.Vector3(1.0, 0.5, 0.0) },
       resolution: { value: new THREE.Vector2() },
       map: { value: texture },
-      swtch: { value: 0 },
+      swtch: { value: 1 },
     },
   });
 
-  // var plane = new THREE.Mesh(geometry, [material, shaderMaterial]);
   var plane = new THREE.Mesh(geometry, shaderMaterial);
   scene.add(plane);
 
@@ -157,20 +139,11 @@ btn.addEventListener("click", async () => {
   var renderPass = new RenderPass(scene, camera);
   effcomposer.addPass(renderPass);
 
-  //   var sepiaShader = new ShaderPass(SepiaShader);
-  //   var copy = new ShaderPass(CopyShader);
-  //   copy.renderToScreen = true;
-
-  //   effcomposer.addPass(renderPass);
-  //   effcomposer.addPass(sepiaShader);
-  //   effcomposer.addPass(copy);
-
   var glitchPass = new GlitchPass();
   glitchPass.renderToScreen = true;
   effcomposer.addPass(glitchPass);
 
   function animate() {
-    // this.shaderMaterial.uniforms.opacity.value = 1;
     shaderMaterial.uniforms.time.value += 0.05;
 
     // renderer.render(scene, camera);
