@@ -4,6 +4,9 @@ import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { GlitchPass } from "three/examples/jsm/postprocessing/GlitchPass.js";
+// import { CopyShader } from "three/examples/jsm/shaders/CopyShader.js";
+// import { SepiaShader } from "three/examples/jsm/shaders/SepiaShader.js";
+// import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 
 const WIDTH = 640.0;
 const HEIGHT = 480.0;
@@ -69,7 +72,7 @@ var renderer = new THREE.WebGLRenderer();
 renderer.setSize(WIDTH, HEIGHT);
 
 let mytarget = new THREE.WebGLRenderTarget(WIDTH, HEIGHT);
-let myeffectcomp = new EffectComposer(renderer, mytarget);
+let effcomposer = new EffectComposer(renderer);
 
 btn.addEventListener("click", async () => {
   btnPlus.addEventListener("click", () => {
@@ -146,23 +149,32 @@ btn.addEventListener("click", async () => {
   });
 
   // var plane = new THREE.Mesh(geometry, [material, shaderMaterial]);
-  var plane = new THREE.Mesh(geometry);
+  var plane = new THREE.Mesh(geometry, shaderMaterial);
   scene.add(plane);
 
   gl_div.appendChild(renderer.domElement);
 
   var renderPass = new RenderPass(scene, camera);
-  myeffectcomp.addPass(renderPass);
+  effcomposer.addPass(renderPass);
+
+  //   var sepiaShader = new ShaderPass(SepiaShader);
+  //   var copy = new ShaderPass(CopyShader);
+  //   copy.renderToScreen = true;
+
+  //   effcomposer.addPass(renderPass);
+  //   effcomposer.addPass(sepiaShader);
+  //   effcomposer.addPass(copy);
 
   var glitchPass = new GlitchPass();
-  myeffectcomp.addPass(glitchPass);
+  glitchPass.renderToScreen = true;
+  effcomposer.addPass(glitchPass);
 
   function animate() {
     // this.shaderMaterial.uniforms.opacity.value = 1;
     shaderMaterial.uniforms.time.value += 0.05;
 
     // renderer.render(scene, camera);
-    myeffectcomp.render();
+    effcomposer.render();
     requestAnimationFrame(animate);
   }
   requestAnimationFrame(animate);
