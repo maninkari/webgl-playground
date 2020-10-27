@@ -1,6 +1,7 @@
 import vs from "./pos.vert";
 import shader from "./shader.frag";
-import sobel from "./sobel.frag";
+import sobel from "./shaders/sobel.frag";
+import luminance from "./shaders/luminance.frag";
 import * as THREE from "three";
 
 const style = document.createElement("style");
@@ -14,7 +15,7 @@ style.innerHTML = `ul {
 
   li {
     float: left;
-  }
+  } 
 
   li a {
     display: block;
@@ -140,11 +141,11 @@ btn.addEventListener("click", async () => {
     fragmentShader: sobel,
     transparent: true,
     uniforms: {
-      map: { value: texture },
+      tDiffuse: { value: texture },
       uWindow: {
         value: new THREE.Vector2(640.0, 480.0),
       },
-      threshold: { value: 1.0 },
+      threshold: { value: 1 },
     },
   });
 
@@ -161,8 +162,8 @@ btn.addEventListener("click", async () => {
   function animate() {
     // this.shaderMaterial.uniforms.opacity.value = 1;
     // shaderMaterial.uniforms.time.value += 0.05;
-    t += 0.05;
-    shaderMaterial.uniforms.threshold.value = 20 * Math.abs(Math.sin(t));
+    t += 0.1;
+    // shaderMaterial.uniforms.threshold.value = 100 + 100 * Math.sin(t / 10);
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
   }

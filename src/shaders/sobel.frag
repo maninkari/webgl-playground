@@ -1,4 +1,4 @@
-uniform sampler2D map;
+uniform sampler2D tDiffuse;
 uniform vec2 uWindow;
 uniform float threshold;
 
@@ -8,14 +8,14 @@ void main() {
 
     vec2 offset = threshold / uWindow;
 
-    float bottomLeftIntensity = texture2D(map, vUv + vec2(-offset.x, offset.y)).r;
-    float topRightIntensity = texture2D(map, vUv + vec2(offset.x, -offset.y)).r;
-    float topLeftIntensity = texture2D(map, vUv + vec2(-offset.x, -offset.y)).r;
-    float bottomRightIntensity = texture2D(map, vUv + vec2(offset.x, offset.y)).r;
-    float leftIntensity = texture2D(map, vUv + vec2(-offset.x, 0.0)).r;
-    float rightIntensity = texture2D(map, vUv + vec2(offset.x, 0.0)).r;
-    float bottomIntensity = texture2D(map, vUv + vec2(0.0, offset.y)).r;
-    float topIntensity = texture2D(map, vUv + vec2(0.0, -offset.y)).r;
+    float bottomLeftIntensity = texture2D(tDiffuse, vUv + vec2(-offset.x, offset.y)).r;
+    float topRightIntensity = texture2D(tDiffuse, vUv + vec2(offset.x, -offset.y)).r;
+    float topLeftIntensity = texture2D(tDiffuse, vUv + vec2(-offset.x, -offset.y)).r;
+    float bottomRightIntensity = texture2D(tDiffuse, vUv + vec2(offset.x, offset.y)).r;
+    float leftIntensity = texture2D(tDiffuse, vUv + vec2(-offset.x, 0.0)).r;
+    float rightIntensity = texture2D(tDiffuse, vUv + vec2(offset.x, 0.0)).r;
+    float bottomIntensity = texture2D(tDiffuse, vUv + vec2(0.0, offset.y)).r;
+    float topIntensity = texture2D(tDiffuse, vUv + vec2(0.0, -offset.y)).r;
 
     vec2 gradientDirection;
     gradientDirection.x = -bottomLeftIntensity - 2.0 * leftIntensity - topLeftIntensity + bottomRightIntensity + 2.0 * rightIntensity + topRightIntensity;
