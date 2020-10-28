@@ -7,7 +7,6 @@ import * as THREE from "three";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { GlitchPass } from "three/examples/jsm/postprocessing/GlitchPass.js";
-import { TexturePass } from "three/examples/jsm/postprocessing/TexturePass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 
 const WIDTH = 640.0;
@@ -15,7 +14,6 @@ const HEIGHT = 480.0;
 let MODEL = null;
 
 (async () => {
-  // await tf.setBackend("wasm");
   MODEL = await blazeface.load();
 })();
 
@@ -108,7 +106,8 @@ rtScene.background = new THREE.Color("red");
 const drawRect = (contxt, x1, y1, x2, y2) => {
   contxt.beginPath();
   contxt.rect(x1, y1, x2 - x1, y2 - y1);
-  contxt.strokeStyle = "red";
+  contxt.lineWidth = 5;
+  contxt.strokeStyle = "#ffffff";
   contxt.stroke();
 };
 
@@ -158,24 +157,7 @@ btn.addEventListener("click", async () => {
   camera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
   // camera.zoom = 1.0;
 
-  var rtscene = new THREE.Scene();
-  rtscene.background = new THREE.Color("cyan");
-
-  let rtcamera = new THREE.OrthographicCamera(
-    WIDTH / -2,
-    WIDTH / 2,
-    HEIGHT / 2,
-    HEIGHT / -2,
-    0.1,
-    1000
-  );
-
-  rtcamera.position.z = WIDTH / 2.0;
-  rtcamera.lookAt(new THREE.Vector3(0.0, 0.0, 0.0));
-  // camera.zoom = 1.0;
-
   var geometry = new THREE.PlaneGeometry(WIDTH * 0.75, HEIGHT * 0.75, 0.0);
-  var geometry2 = new THREE.PlaneGeometry(WIDTH / 2.0, HEIGHT / 2.0, 10.0);
 
   var shaderMaterial = new THREE.ShaderMaterial({
     vertexShader: vs,
@@ -202,20 +184,8 @@ btn.addEventListener("click", async () => {
     },
   };
 
-  const material = new THREE.MeshBasicMaterial({
-    map: mytarget.texture,
-  });
-
-  var plane = new THREE.Mesh(geometry, material);
+  var plane = new THREE.Mesh(geometry, shaderMaterial);
   scene.add(plane);
-
-  var plane2 = new THREE.Mesh(
-    geometry2,
-    new THREE.MeshBasicMaterial({ color: 0xffff00 })
-  );
-  rtscene.add(plane2);
-
-  // var line = new THREE.LineStrip();
 
   gl_div.appendChild(renderer.domElement);
   gl_div.appendChild(canv);
@@ -231,37 +201,38 @@ btn.addEventListener("click", async () => {
   glitchPass.renderToScreen = true;
   effcomposer.addPass(glitchPass);
 
+  let d = 0;
+
   async function animate() {
     const faces = await MODEL.estimateFaces(video, false);
     canv.getContext("2d").clearRect(0, 0, WIDTH, HEIGHT);
-    console.log(faces[0]);
 
-    faces[0].landmarks.map((lm) => {
+    if (faces && faces[0]) {
+      d = Math.abs(320 - faces[0].landmarks[2][0]) / 320.0;
+
+      faces[0].landmarks.map((lm) => {
+        drawRect(
+          canv.getContext("2d"),
+          Math.round(lm[0]) - 5,
+          Math.round(lm[1]) - 5,
+          Math.round(lm[0]) + 5,
+          Math.round(lm[1] + 5)
+        );
+      });
+
       drawRect(
         canv.getContext("2d"),
-        Math.round(lm[0]) - 5,
-        Math.round(lm[1]) - 5,
-        Math.round(lm[0]) + 5,
-        Math.round(lm[1] + 5)
+        Math.round(faces[0].topLeft[0]),
+        Math.round(faces[0].topLeft[1]),
+        Math.round(faces[0].bottomRight[0]),
+        Math.round(faces[0].bottomRight[1])
       );
-    });
-
-    drawRect(
-      canv.getContext("2d"),
-      Math.round(faces[0].topLeft[0]),
-      Math.round(faces[0].topLeft[1]),
-      Math.round(faces[0].bottomRight[0]),
-      Math.round(faces[0].bottomRight[1])
-    );
+    }
 
     shaderMaterial.uniforms.time.value += 0.05;
+    sobelPass.uniforms.threshold.value = 500 * d * d * d;
 
-    renderer.setRenderTarget(mytarget);
-    renderer.render(rtscene, rtcamera);
-    renderer.setRenderTarget(null);
-
-    renderer.render(scene, camera);
-    // effcomposer.render();
+    effcomposer.render();
     requestAnimationFrame(animate);
   }
   requestAnimationFrame(animate);
