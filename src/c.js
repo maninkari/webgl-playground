@@ -42,7 +42,21 @@ style.innerHTML = `ul {
 
   li a:hover {
     background-color: #111111;
-}`;
+  }
+
+  .wrapper {
+    position: relative;
+    width: ${WIDTH};
+    height: ${HEIGHT};
+    float: left;
+  }
+
+  .wrapper canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+  }
+`;
 document.head.appendChild(style);
 
 const menu = document.createElement("ul");
@@ -74,7 +88,13 @@ document.body.appendChild(video);
 const gl_div = document.createElement("div");
 gl_div.width = WIDTH;
 gl_div.height = HEIGHT;
+gl_div.className = "wrapper";
 document.body.appendChild(gl_div);
+
+const canv = document.createElement("canvas");
+canv.id = "debug";
+canv.width = WIDTH;
+canv.height = HEIGHT;
 
 var renderer = new THREE.WebGLRenderer();
 renderer.setSize(WIDTH, HEIGHT);
@@ -84,6 +104,14 @@ let effcomposer = new EffectComposer(renderer, mytarget);
 
 const rtScene = new THREE.Scene();
 rtScene.background = new THREE.Color("red");
+
+const drawRect = (contxt, x1, y1, x2, y2) => {
+  contxt.clearRect(0, 0, WIDTH, HEIGHT);
+  contxt.beginPath();
+  contxt.rect(x1, y1, x2, y2);
+  contxt.strokeStyle = "red";
+  contxt.stroke();
+};
 
 // starting --------------------------------------------------------
 btn.addEventListener("click", async () => {
@@ -191,6 +219,7 @@ btn.addEventListener("click", async () => {
   // var line = new THREE.LineStrip();
 
   gl_div.appendChild(renderer.domElement);
+  gl_div.appendChild(canv);
 
   var renderPass = new RenderPass(scene, camera);
   effcomposer.addPass(renderPass);
@@ -204,8 +233,15 @@ btn.addEventListener("click", async () => {
   effcomposer.addPass(glitchPass);
 
   async function animate() {
-    // const faces = await MODEL.estimateFaces(video, false);
-    // console.log(faces);
+    const faces = await MODEL.estimateFaces(video, false);
+    drawRect(
+      canv.getContext("2d"),
+      faces[0].topLeft[0],
+      faces[0].topLeft[1],
+      faces[0].bottomRight[0],
+      faces[0].bottomRight[1]
+    );
+
     shaderMaterial.uniforms.time.value += 0.05;
 
     renderer.setRenderTarget(mytarget);
