@@ -106,9 +106,8 @@ const rtScene = new THREE.Scene();
 rtScene.background = new THREE.Color("red");
 
 const drawRect = (contxt, x1, y1, x2, y2) => {
-  contxt.clearRect(0, 0, WIDTH, HEIGHT);
   contxt.beginPath();
-  contxt.rect(x1, y1, x2, y2);
+  contxt.rect(x1, y1, x2 - x1, y2 - y1);
   contxt.strokeStyle = "red";
   contxt.stroke();
 };
@@ -234,12 +233,25 @@ btn.addEventListener("click", async () => {
 
   async function animate() {
     const faces = await MODEL.estimateFaces(video, false);
+    canv.getContext("2d").clearRect(0, 0, WIDTH, HEIGHT);
+    console.log(faces[0]);
+
+    faces[0].landmarks.map((lm) => {
+      drawRect(
+        canv.getContext("2d"),
+        Math.round(lm[0]) - 5,
+        Math.round(lm[1]) - 5,
+        Math.round(lm[0]) + 5,
+        Math.round(lm[1] + 5)
+      );
+    });
+
     drawRect(
       canv.getContext("2d"),
-      faces[0].topLeft[0],
-      faces[0].topLeft[1],
-      faces[0].bottomRight[0],
-      faces[0].bottomRight[1]
+      Math.round(faces[0].topLeft[0]),
+      Math.round(faces[0].topLeft[1]),
+      Math.round(faces[0].bottomRight[0]),
+      Math.round(faces[0].bottomRight[1])
     );
 
     shaderMaterial.uniforms.time.value += 0.05;
