@@ -24,9 +24,12 @@ void main() {
     float gradientMagnitude = length(gradientDirection);
     vec2 normalizedDirection = normalize(gradientDirection);
 
-    normalizedDirection = sign(normalizedDirection) * floor(abs(normalizedDirection) + 0.617316); // Offset by 1-sin(pi/8) to set to 0 if near axis, 1 if away
+    // Offset by 1-sin(pi/8) to set to 0 if near axis, 1 if away
+    normalizedDirection = sign(normalizedDirection) * floor(abs(normalizedDirection) + 0.617316); 
     normalizedDirection = (normalizedDirection + 1.0) * 0.5; // Place -1.0 - 1.0 within 0 - 1.0
 
-    gl_FragColor = vec4(gradientMagnitude, normalizedDirection.x, normalizedDirection.y, 1.0);
+    gl_FragColor = (threshold > 0.0) ? 
+    vec4(gradientMagnitude, normalizedDirection.x, normalizedDirection.y, 1.0) :
+    texture2D(tDiffuse, vUv);
     //gl_FragColor = vec4(gradientMagnitude, gradientMagnitude, gradientMagnitude, 1.0); // Normal edge detection version
 }

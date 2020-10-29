@@ -111,18 +111,16 @@ const drawRect = (contxt, x1, y1, x2, y2) => {
   contxt.stroke();
 };
 
+let state = 0;
+
 // starting --------------------------------------------------------
 btn.addEventListener("click", async () => {
   btnPlus.addEventListener("click", () => {
-    shaderMaterial.uniforms.swtch.value < 5
-      ? shaderMaterial.uniforms.swtch.value++
-      : 5;
+    state = state < 2 ? state + 1 : state;
   });
 
   btnMinus.addEventListener("click", () => {
-    shaderMaterial.uniforms.swtch.value > 1
-      ? shaderMaterial.uniforms.swtch.value--
-      : 1;
+    state = state > 0 ? state - 1 : state;
   });
 
   const stream = await navigator.mediaDevices.getUserMedia({
@@ -207,30 +205,33 @@ btn.addEventListener("click", async () => {
     const faces = await MODEL.estimateFaces(video, false);
     canv.getContext("2d").clearRect(0, 0, WIDTH, HEIGHT);
 
-    if (faces && faces[0]) {
+    if (faces && faces[0] && state) {
       d = Math.abs(320 - faces[0].landmarks[2][0]) / 320.0;
 
-      faces[0].landmarks.map((lm) => {
+      if (state > 1) {
+        faces[0].landmarks.map((lm) => {
+          drawRect(
+            canv.getContext("2d"),
+            Math.round(lm[0]) - 5,
+            Math.round(lm[1]) - 5,
+            Math.round(lm[0]) + 5,
+            Math.round(lm[1] + 5)
+          );
+        });
+
         drawRect(
           canv.getContext("2d"),
-          Math.round(lm[0]) - 5,
-          Math.round(lm[1]) - 5,
-          Math.round(lm[0]) + 5,
-          Math.round(lm[1] + 5)
+          Math.round(faces[0].topLeft[0]),
+          Math.round(faces[0].topLeft[1]),
+          Math.round(faces[0].bottomRight[0]),
+          Math.round(faces[0].bottomRight[1])
         );
-      });
-
-      drawRect(
-        canv.getContext("2d"),
-        Math.round(faces[0].topLeft[0]),
-        Math.round(faces[0].topLeft[1]),
-        Math.round(faces[0].bottomRight[0]),
-        Math.round(faces[0].bottomRight[1])
-      );
+      }
     }
 
+    glitchPass.renderToScreen = d > 0.05;
     shaderMaterial.uniforms.time.value += 0.05;
-    sobelPass.uniforms.threshold.value = 500 * d * d * d;
+    sobelPass.uniforms.threshold.value = d > 0.05 ? 500 * d * d : 0.0;
 
     effcomposer.render();
     requestAnimationFrame(animate);
